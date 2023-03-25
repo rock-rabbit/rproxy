@@ -1,6 +1,14 @@
 ### 网络代理服务
 
 ### 使用方式
+mini 代理
+``` go
+rproxy.RegisterMiddle(rproxy.NewMiniMiddle("GET", "sspai.com", "/api/v1/recommend/page/get", func(res *http.Response, body []byte) {
+	fmt.Println(res.Request.URL.String())
+}))
+```
+
+自定义代理
 ``` go
 type sspaiMiddle struct{}
 
