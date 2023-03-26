@@ -30,6 +30,27 @@ func GetProxyEnable() error {
 	return ErrProxyNotEnable
 }
 
+// GetProxy 获取代理服务器
+func GetProxy() (enable bool, server string, err error) {
+	key, _, err := registry.CreateKey(registry.CURRENT_USER, RegPath, registry.ALL_ACCESS)
+	if err != nil {
+		return false, "", err
+	}
+	defer key.Close()
+	val, _, err := key.GetIntegerValue("ProxyEnable")
+	if err != nil {
+		return false, "", err
+	}
+	if val != 0 {
+		enable = true
+	}
+	server, _, err = key.GetStringValue("ProxyServer")
+	if err != nil {
+		return false, "", err
+	}
+	return enable, server, nil
+}
+
 // SetProxy 设置代理
 func SetProxy(enable bool, server string) error {
 	key, _, err := registry.CreateKey(registry.CURRENT_USER, RegPath, registry.ALL_ACCESS)

@@ -1,8 +1,6 @@
 package rproxy
 
 import (
-	"net/http"
-
 	"github.com/rock-rabbit/rproxy/goproxy"
 )
 
@@ -20,7 +18,7 @@ func RegisterMiddle(middle Middle) error {
 }
 
 // Run 运行代理服务
-func Run(addrs ...string) (srv *http.Server, err error) {
+func Run(addrs ...string) (rsrv *RproxyService, err error) {
 	addr := ":"
 	if len(addrs) != 0 {
 		addr = addrs[0]

@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -19,6 +20,11 @@ import (
 type Rproxy struct {
 	// middles 代理中间件
 	middles map[string]Middle
+}
+
+// RproxyService 代理服务
+type RproxyService struct {
+	Srv *http.Server
 }
 
 type Cache struct {
@@ -48,7 +54,7 @@ func (e *Rproxy) NewGoproxy() *goproxy.Proxy {
 }
 
 // Run 运行代理服务
-func (e *Rproxy) Run(addr string) (srv *http.Server, err error) {
+func (e *Rproxy) Run(addr string) (rsrv *RproxyService, err error) {
 	if addr == "" {
 		addr = ":"
 	}
@@ -56,7 +62,7 @@ func (e *Rproxy) Run(addr string) (srv *http.Server, err error) {
 	if err != nil {
 		return nil, err
 	}
-	srv = &http.Server{
+	srv := &http.Server{
 		Addr:         ln.Addr().String(),
 		Handler:      e.NewGoproxy(),
 		ReadTimeout:  1 * time.Minute,
@@ -68,7 +74,46 @@ func (e *Rproxy) Run(addr string) (srv *http.Server, err error) {
 			fmt.Println("rproxy run error:", err)
 		}
 	}()
-	return srv, nil
+	return &RproxyService{
+		Srv: srv,
+	}, nil
+}
+
+// Addr 获取代理服务地址
+func (s *RproxyService) Addr() string {
+	var (
+		host     = s.Srv.Addr
+		hostList = strings.Split(s.Srv.Addr, ":")
+	)
+	if len(hostList) != 0 {
+		host = hostList[len(hostList)-1]
+	}
+	return "127.0.0.1:" + host
+}
+
+// Enable 开启代理服务
+func (s *RproxyService) Enable() error {
+	return SetProxy(true, s.Addr())
+}
+
+// Disable 关闭代理服务
+func (s *RproxyService) Disable() error {
+	return SetProxy(false, "")
+}
+
+// IsEnable 是否开启了当前代理服务
+func (s *RproxyService) IsEnable() error {
+	enable, server, err := GetProxy()
+	if err != nil {
+		return err
+	}
+	if !enable {
+		return fmt.Errorf("proxy is disable")
+	}
+	if server != s.Addr() {
+		return fmt.Errorf("proxy server is %s", server)
+	}
+	return nil
 }
 
 // RegisterMiddle 注册中间件
