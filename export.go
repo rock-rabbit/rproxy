@@ -13,8 +13,8 @@ func NewRproxy() *Rproxy {
 }
 
 // RegisterMiddle 注册中间件
-func RegisterMiddle(middle Middle) error {
-	return std.RegisterMiddle(middle)
+func RegisterMiddle(middles ...Middle) error {
+	return std.RegisterMiddle(middles...)
 }
 
 // Run 运行代理服务

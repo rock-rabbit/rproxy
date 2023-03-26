@@ -117,11 +117,13 @@ func (s *RproxyService) IsEnable() error {
 }
 
 // RegisterMiddle 注册中间件
-func (e *Rproxy) RegisterMiddle(middle Middle) error {
-	if e.middles == nil {
-		e.middles = make(map[string]Middle)
+func (e *Rproxy) RegisterMiddle(middles ...Middle) error {
+	for _, middle := range middles {
+		if e.middles == nil {
+			e.middles = make(map[string]Middle)
+		}
+		e.middles[middle.Name()] = middle
 	}
-	e.middles[middle.Name()] = middle
 	return nil
 }
 
