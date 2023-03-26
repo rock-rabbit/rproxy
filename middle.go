@@ -1,6 +1,10 @@
 package rproxy
 
-import "net/http"
+import (
+	"net/http"
+	"regexp"
+	"strings"
+)
 
 // Middle 中间代理接口
 type Middle interface {
@@ -12,7 +16,7 @@ type Middle interface {
 	Handle(res *http.Response, body []byte)
 }
 
-// 实现微型中间件
+// MiniMiddle 实现微型中间件
 type MiniMiddle struct {
 	Method  string
 	Host    string
@@ -40,17 +44,19 @@ func (m *MiniMiddle) Name() string {
 // Scope 指定代理范围
 func (m *MiniMiddle) Scope(req *http.Request) bool {
 	if m.Method != "" {
-		if req.Method != m.Method {
+		if req.Method != strings.ToUpper(m.Method) {
 			return false
 		}
 	}
 	if m.Host != "" {
-		if req.URL.Host != m.Host {
+		matched, _ := regexp.MatchString(m.Host, req.URL.Host)
+		if !matched {
 			return false
 		}
 	}
 	if m.Path != "" {
-		if req.URL.Path != m.Path {
+		matched, _ := regexp.MatchString(m.Path, req.URL.Path)
+		if !matched {
 			return false
 		}
 	}

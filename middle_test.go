@@ -38,5 +38,10 @@ func TestMiniMiddle(t *testing.T) {
 	rproxy.RegisterMiddle(rproxy.NewMiniMiddle("GET", "sspai.com", "/api/v1/recommend/page/get", func(res *http.Response, body []byte) {
 		fmt.Println(res.Request.URL.String())
 	}))
-	rproxy.Run(":8080")
+	srv, err := rproxy.Run("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(srv.Addr)
+	select {}
 }

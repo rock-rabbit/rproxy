@@ -1,6 +1,10 @@
 package rproxy
 
-import "github.com/ouqiang/goproxy"
+import (
+	"net/http"
+
+	"github.com/rock-rabbit/rproxy/goproxy"
+)
 
 var std = NewRproxy()
 
@@ -16,7 +20,11 @@ func RegisterMiddle(middle Middle) error {
 }
 
 // Run 运行代理服务
-func Run(addr string) error {
+func Run(addrs ...string) (srv *http.Server, err error) {
+	addr := ":"
+	if len(addrs) != 0 {
+		addr = addrs[0]
+	}
 	return std.Run(addr)
 }
 

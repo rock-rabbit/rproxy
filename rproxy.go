@@ -5,13 +5,15 @@ import (
 	"compress/flate"
 	"compress/gzip"
 	"crypto/tls"
+	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
 
-	"github.com/ouqiang/goproxy"
+	"github.com/rock-rabbit/rproxy/goproxy"
 )
 
 type Rproxy struct {
@@ -46,14 +48,27 @@ func (e *Rproxy) NewGoproxy() *goproxy.Proxy {
 }
 
 // Run 运行代理服务
-func (e *Rproxy) Run(addr string) error {
-	server := &http.Server{
-		Addr:         addr,
+func (e *Rproxy) Run(addr string) (srv *http.Server, err error) {
+	if addr == "" {
+		addr = ":"
+	}
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return nil, err
+	}
+	srv = &http.Server{
+		Addr:         ln.Addr().String(),
 		Handler:      e.NewGoproxy(),
 		ReadTimeout:  1 * time.Minute,
 		WriteTimeout: 1 * time.Minute,
 	}
-	return server.ListenAndServe()
+	go func() {
+		err := srv.Serve(ln)
+		if err != nil {
+			fmt.Println("rproxy run error:", err)
+		}
+	}()
+	return srv, nil
 }
 
 // RegisterMiddle 注册中间件
