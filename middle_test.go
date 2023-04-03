@@ -39,13 +39,13 @@ func TestMiddle(t *testing.T) {
 
 func TestMiniMiddle(t *testing.T) {
 	rproxy.RegisterMiddle(rproxy.NewMiniMiddle("GET", "sspai.com", "/api/v1/recommend/page/get", func(res *http.Response, body []byte) {
-		fmt.Println(res.Request.URL.String())
+		t.Log(res.Request.URL.String())
 	}))
 	ctl, err := rproxy.Run("")
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("proxy addr:", ctl.Addr())
+	t.Log("proxy addr:", ctl.Addr())
 	ctl.Enable()
 
 	// 关闭信号时关闭代理
@@ -56,7 +56,7 @@ func TestMiniMiddle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("proxy disable")
+	t.Log("proxy disable")
 
 	os.Exit(0)
 }

@@ -160,6 +160,13 @@ type options struct {
 
 type Option func(*options)
 
+// WithRootCA 设置根证书
+func WithRootCA(ca []byte, key []byte) Option {
+	return func(opt *options) {
+		cert.InitRootCA(ca, key)
+	}
+}
+
 // WithDisableKeepAlive 连接是否重用
 func WithDisableKeepAlive(disableKeepAlive bool) Option {
 	return func(opt *options) {
@@ -167,6 +174,7 @@ func WithDisableKeepAlive(disableKeepAlive bool) Option {
 	}
 }
 
+// WithClientTrace 设置 httptrace
 func WithClientTrace(t *httptrace.ClientTrace) Option {
 	return func(opt *options) {
 		opt.clientTrace = t

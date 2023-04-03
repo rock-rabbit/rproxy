@@ -43,3 +43,12 @@ func TestMiddle(t *testing.T) {
 	rproxy.Run(":8080")
 }
 ```
+
+### Macos 安装证书
+``` bash
+sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain rproxy-ca-cert.pem
+```
+### Windows 安装证书
+``` bash
+certutil.exe -addstore root rproxy-ca-cert.cer
+```

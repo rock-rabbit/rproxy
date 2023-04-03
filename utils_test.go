@@ -18,3 +18,7 @@ func TestOpenProxy(t *testing.T) {
 func TestStopProxy(t *testing.T) {
 	fmt.Println(rproxy.SetProxy(false, "127.0.0.1:8877"))
 }
+
+func TestGetAppDatadir(t *testing.T) {
+	t.Log(rproxy.GetAppDatadir())
+}

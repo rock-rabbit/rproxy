@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"compress/flate"
 	"compress/gzip"
-	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/rock-rabbit/rproxy/goproxy"
@@ -27,30 +27,50 @@ type RproxyService struct {
 	Srv *http.Server
 }
 
-type Cache struct {
-	m sync.Map
-}
-
-// Set 设置证书
-func (c *Cache) Set(host string, cert *tls.Certificate) {
-	c.m.Store(host, cert)
-}
-
-// Get 获取证书
-func (c *Cache) Get(host string) *tls.Certificate {
-	v, ok := c.m.Load(host)
-	if !ok {
-		return nil
-	}
-	return v.(*tls.Certificate)
-}
+var (
+	caFile  = filepath.Join(GetAppDatadir(), "rproxy-ca-cert.crt")
+	keyFile = filepath.Join(GetAppDatadir(), "rproxy-ca-cert.key")
+)
 
 // NewGoproxy 创建代理服务
 func (e *Rproxy) NewGoproxy() *goproxy.Proxy {
+	ca, key, _ := e.LoadRootCA()
 	return goproxy.New(
 		goproxy.WithDelegate(e),
-		goproxy.WithDecryptHTTPS(&Cache{}),
+		goproxy.WithDecryptHTTPS(NewCretCache()),
+		goproxy.WithRootCA(ca, key),
 	)
+}
+
+// LoadRootCA 加载根证书
+func (e *Rproxy) LoadRootCA() (ca []byte, key []byte, err error) {
+	if !FileExists(caFile) || !FileExists(keyFile) {
+		ca, key, err = GenerateCA()
+		if err != nil {
+			return
+		}
+		// 创建文件夹
+		if err = os.MkdirAll(filepath.Dir(caFile), 0755); err != nil {
+			return
+		}
+		if err = os.WriteFile(caFile, ca, 0644); err != nil {
+			return
+		}
+		if err = os.WriteFile(keyFile, key, 0644); err != nil {
+			return
+		}
+		return
+	}
+	// 加载根证书
+	ca, err = os.ReadFile(caFile)
+	if err != nil {
+		return
+	}
+	key, err = os.ReadFile(keyFile)
+	if err != nil {
+		return
+	}
+	return
 }
 
 // Run 运行代理服务
