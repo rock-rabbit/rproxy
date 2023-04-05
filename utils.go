@@ -2,9 +2,8 @@ package rproxy
 
 import (
 	"bytes"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	crand "crypto/rand"
+	cryptorand "crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
@@ -46,7 +45,7 @@ func FileExists(f string) bool {
 
 // GenerateCA 生成根证书
 func GenerateCA() (ca []byte, key []byte, err error) {
-	priv, err := ecdsa.GenerateKey(elliptic.P256(), crand.Reader)
+	priv, err := rsa.GenerateKey(cryptorand.Reader, 2048)
 	if err != nil {
 		return
 	}
@@ -69,7 +68,7 @@ func GenerateCA() (ca []byte, key []byte, err error) {
 		EmailAddresses:        []string{"2896865355@qq.com"},
 	}
 
-	derBytes, err := x509.CreateCertificate(crand.Reader, tmpl, tmpl, &priv.PublicKey, priv)
+	derBytes, err := x509.CreateCertificate(cryptorand.Reader, tmpl, tmpl, &priv.PublicKey, priv)
 	if err != nil {
 		return
 	}
@@ -79,7 +78,7 @@ func GenerateCA() (ca []byte, key []byte, err error) {
 	}
 	ca = pem.EncodeToMemory(certBlock)
 
-	privBytes, err := x509.MarshalECPrivateKey(priv)
+	privBytes := x509.MarshalPKCS1PrivateKey(priv)
 	if err != nil {
 		return
 	}
