@@ -7,9 +7,8 @@ require (
 	github.com/viki-org/dnscache v0.0.0-20130720023526-c70c1f23c5d8
 )
 
-require golang.org/x/sys v0.6.0
-
 require (
-	github.com/andybalholm/brotli v1.0.5 // indirect
-	gopkg.in/elazarl/goproxy.v1 v1.0.0-20180725130230-947c36da3153 // indirect
+	github.com/andybalholm/brotli v1.0.5
+	golang.org/x/sys v0.7.0
+	gopkg.in/elazarl/goproxy.v1 v1.0.0-20180725130230-947c36da3153
 )
